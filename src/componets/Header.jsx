@@ -36,14 +36,11 @@ function useOnClickOutside(ref, handler) {
     <li className='list-none' key={data}>{data}</li>
   ));
 
-  return (
+  return ( 
     <div className='header'>
       <nav className='flex  '>
         <div className="flex2">
-          <li className='list-none '><a href="">All</a></li>
-          <li className=''><a href="">Board</a></li>
-          <li className=''><a href="">Graph</a></li>
-          <li className='l'><a href="">Recent</a></li>
+          
         </div>
         <div className="profile relative">
           <img src={Profile} alt="" onClick={toggle} className='img' />
@@ -54,6 +51,12 @@ function useOnClickOutside(ref, handler) {
           )}
         </div>
       </nav>
+      <div className='flex2'>
+      <li className='list-none red-all'><a href="">All</a></li>
+          <li className=''><a href="">Board</a></li>
+          <li className=''><a href="">Graph</a></li>
+          <li className='l'><a href="">Recent</a></li>
+      </div>
     </div>
   );
 };

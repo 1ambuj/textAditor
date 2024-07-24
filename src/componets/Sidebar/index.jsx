@@ -114,7 +114,7 @@ export default function TreeView({ currentNote, setCurrentNoteId, newNote ,notes
     setData((prevData) => updateData(prevData));
   }
   
-console.log(notes)
+// console.log(notes)
   return (
     <div className="tree-view-container">
       <MenuList 

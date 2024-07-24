@@ -1,129 +1,166 @@
-import { useState, useEffect,  useCallback, createRef } from 'react';
-import ReactQuill, {Quill} from 'react-quill';
+import  { useEffect, useState, useRef } from "react";
+import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
-import '../App.css';
 
+export default function Editor({ currentNote, updateNote }) {
+  const [contentBlocks, setContentBlocks] = useState(currentNote.body);
+  const quillRef = useRef(null);
 
-const BlockEmbed = Quill.import('blots/block/embed');
-
-// Define custom ButtonBlot
-class ButtonBlot extends BlockEmbed {
-  static create(value) {
-    const node = super.create();
-    node.setAttribute('contenteditable', false);
-    node.className = 'custom-button';
-    const button = document.createElement('button');
-    button.innerText = value;
-    node.appendChild(button);
-    return node;
-  }
-
-  static value(node) {
-    return node.innerText;
-  }
-}
-
-// Register the ButtonBlot
-ButtonBlot.blotName = 'button';
-ButtonBlot.tagName = 'div';
-ButtonBlot.className = 'custom-button-container';
-
-Quill.register(ButtonBlot);
-
-const Editor = ({ currentNote, updateNote }) => {
-  const [popupVisible, setPopupVisible] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ left: 0, top: 0 });
-  const quillRef = createRef();
+  useEffect(() => {
+    setContentBlocks(currentNote.body);
+  }, [currentNote]);
 
   const modules = {
     toolbar: [
       ['bold', 'italic', 'underline', 'link'],
-      ['insertButton'] // Add a custom toolbar button for inserting the button
+      ['insertButton']
     ]
   };
 
-  const handleSelectionChange = useCallback(() => {
-    const quill = quillRef.current?.editor;
-    if (quill) {
-      const selection = quill.getSelection();
-      if (selection && selection.length > 0) {
-        const bounds = quill.getBounds(selection.index, selection.length);
-        const editorBounds = quill.container.getBoundingClientRect();
-        if (bounds && editorBounds) {
-          const popupLeft = bounds.left + window.pageXOffset - editorBounds.left + 300;
-          const popupTop = bounds.bottom + window.pageYOffset - editorBounds.top + 240;
-          setPopupPosition({ left: popupLeft, top: popupTop });
-          setPopupVisible(true);
-          return;
-        }
-      }
-    }
-    setPopupVisible(false);
-  }, [quillRef]);
-
-  useEffect(() => {
-    const quill = quillRef.current?.editor;
-    if (quill) {
-      quill.on('selection-change', handleSelectionChange);
-      return () => {
-        quill.off('selection-change', handleSelectionChange);
-      };
-    }
-  }, [handleSelectionChange, quillRef]);
-
-  const toggleFormat = (format) => {
-    const quill = quillRef.current.editor;
-    quill.format(format, !quill.getFormat()[format]);
+  const handleChange = (content, index) => {
+    const updatedBlocks = [...contentBlocks];
+    updatedBlocks[index] = content;
+    setContentBlocks(updatedBlocks);
+    updateNote(currentNote.id, updatedBlocks); // Propagate changes to App component
   };
-
-  const PopupMenu = () => (
-    <div
-      className="popup"
-      style={{ position: 'absolute', left: popupPosition.left, top: popupPosition.top }}
-    >
-      <button onClick={() => toggleFormat('bold')}>Bold</button>
-      <button onClick={() => toggleFormat('italic')}>Italic</button>
-      <button onClick={() => toggleFormat('underline')}>Underline</button>
-      <button onClick={() => toggleFormat('link')}>Link</button>
-    </div>
-  );
-
-  const handleChange = (content) => {
-    updateNote(content);
-  };
-
-  const handleButtonClick = () => {
-    const quill = quillRef.current.editor;
-    const length = quill.getLength();
-  
-    // Create a new block to ensure the button is at the end
-    quill.insertText(length, '\n'); // Add a new line
-    quill.insertEmbed(length + 1, 'button', 'Click Me!'); // Insert the button
-    quill.insertText(length + 2, '\n'); // Ensure new line after button for better formatting
-    quill.setSelection(length + 3); // Move the cursor after the inserted button
-  };
-  
 
   const handleInsertButton = () => {
-    handleButtonClick();
+    setContentBlocks([...contentBlocks, '']); // Add an empty content block
+    document.querySelector(".editortxt").style.borderBottom = "1px solid #ccc"
+    document.querySelector(".editortxt").style.paddingBottom = "30px"
   };
+
+  //   const PopupMenu = () => {
+//     return (
+//       <div
+//         className="popup"
+//         style={{ position: 'absolute', left: popupPosition.left, top: popupPosition.top }}
+//       >
+//         <button onClick={() => toggleFormat('bold')}>Bold</button>
+//         <button onClick={() => toggleFormat('italic')}>Italic</button>
+//         <button onClick={() => toggleFormat('underline')}>Underline</button>
+//         <button onClick={() => toggleFormat('link')}>Link</button>
+//       </div>
+//     );
+//   };
+//   const handleChange = (content) => {
+//     updateNote(content);
+//   };
+ 
 
   return (
     <div className="editor">
-      <ReactQuill 
-        ref={quillRef}
-        theme="snow" 
-        value={currentNote.body} 
-        onChange={handleChange} 
-        className="editortxt"
-        modules={modules}
-      />
-      {popupVisible && <PopupMenu />}
+      {contentBlocks.map((content, index) => (
+        <ReactQuill
+          key={index}
+          theme="snow"
+          value={content}
+          onChange={(content) => handleChange(content, index)}
+          className="editortxt"
+          modules={modules}
+          ref={quillRef}
+        />
+      ))}
       <div className="button-container">
         <button onClick={handleInsertButton} className='insert-button'>+</button>
       </div>
     </div>
   );
-};
+}
 
-export default Editor;
+
+
+
+// import { useState, useEffect,  useCallback, createRef } from 'react';
+// import ReactQuill from 'react-quill';
+// import 'react-quill/dist/quill.snow.css';
+// import '../App.css';
+
+
+// const Editor = ({currentNote, updateNote}) => {
+ 
+//   // const [value, setValue] = useState('');
+//   const [popupVisible, setPopupVisible] = useState(false);
+//   const [popupPosition, setPopupPosition] = useState({ left: 0, top: 0 });
+//   const quillRef = createRef();
+
+//   const modules = {
+//     toolbar: [
+//       ['bold', 'italic', 'underline', 'link']
+//     ]
+//   };
+//   const handleSelectionChange = useCallback(() => {
+//     const quill = quillRef.current?.editor;
+//     if (quill) {
+//       const selection = quill.getSelection();
+//       if (selection && selection.length > 0) {
+//         const range = quill.getSelection(true);
+//         if (range && range.length > 0) {
+//           const bounds = quill.getBounds(range.index, range.length); // Use Quill's getBounds method
+//           const editorBounds = quill.container.getBoundingClientRect();
+//           // console.log("editbonds",editorBounds)
+//           if (bounds && editorBounds) {
+//             const popupLeft = bounds.left + window.pageXOffset - editorBounds.left+300 ;
+//             const popupTop = bounds.bottom + window.pageYOffset - editorBounds.top + 240;
+//             // console.log("Popup position:", { left: popupLeft, top: popupTop });
+//             setPopupPosition({ left: popupLeft, top: popupTop });
+//             setPopupVisible(true);
+//             return;
+//           }
+//         }
+//       }
+//     }
+
+//     setPopupVisible(false);
+//   }, [quillRef]);
+  
+  
+//   useEffect(() => {
+//     const quill = quillRef.current?.editor;
+//     if (quill) {
+//       quill.on('selection-change', handleSelectionChange);
+//       return () => {
+//         quill.off('selection-change', handleSelectionChange);
+//       };
+//     }
+//   }, [handleSelectionChange, quillRef]);
+
+//   const toggleFormat = (format) => {
+//     const quill = quillRef.current.editor;
+//     quill.format(format, !quill.getFormat()[format]);
+//   };
+
+//   const PopupMenu = () => {
+//     return (
+//       <div
+//         className="popup"
+//         style={{ position: 'absolute', left: popupPosition.left, top: popupPosition.top }}
+//       >
+//         <button onClick={() => toggleFormat('bold')}>Bold</button>
+//         <button onClick={() => toggleFormat('italic')}>Italic</button>
+//         <button onClick={() => toggleFormat('underline')}>Underline</button>
+//         <button onClick={() => toggleFormat('link')}>Link</button>
+//       </div>
+//     );
+//   };
+//   const handleChange = (content) => {
+//     updateNote(content);
+//   };
+ 
+
+//   return (
+//     <div className="editor">
+//       <ReactQuill 
+//         ref={quillRef}
+//         theme="snow" 
+//         value={currentNote.body} 
+//         onChange={handleChange} 
+//         className="editortxt"
+//         modules={modules}
+//       />
+//         {popupVisible && <PopupMenu />}
+//     </div>
+//   );
+// }
+
+// export default Editor
