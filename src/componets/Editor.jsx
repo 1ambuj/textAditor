@@ -1,20 +1,50 @@
-import  { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import ReactQuill from "react-quill";
 import 'react-quill/dist/quill.snow.css';
 
 export default function Editor({ currentNote, updateNote }) {
   const [contentBlocks, setContentBlocks] = useState(currentNote.body);
-  const quillRef = useRef(null);
+  const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0, display: 'none' });
+  const quillRefs = useRef([]);
 
   useEffect(() => {
     setContentBlocks(currentNote.body);
   }, [currentNote]);
 
+  useEffect(() => {
+    quillRefs.current.forEach((quillRef, index) => {
+      const quill = quillRef.getEditor();
+      quill.on('selection-change', (range) => handleSelectionChange(range, index));
+    });
+
+    return () => {
+      quillRefs.current.forEach((quillRef) => {
+        const quill = quillRef.getEditor();
+        quill.off('selection-change');
+      });
+    };
+  }, [contentBlocks]);
+
+  const handleSelectionChange = (range, index) => {
+    const quill = quillRefs.current[index].getEditor();
+    const editorBounds = quill.root.getBoundingClientRect();
+
+    if (range && range.length > 0) {
+      const rangeBounds = quill.getBounds(range);
+      setToolbarPosition({
+        top: editorBounds.top + window.scrollY + rangeBounds.top - 40,
+        left: editorBounds.left + window.scrollX + rangeBounds.left,
+        display: 'block'
+      });
+    } else {
+      setToolbarPosition({ ...toolbarPosition, display: 'none' });
+    }
+  };
+
   const modules = {
-    toolbar: [
-      ['bold', 'italic', 'underline', 'link'],
-      ['insertButton']
-    ]
+    toolbar: {
+      container: '#toolbar'
+    }
   };
 
   const handleChange = (content, index) => {
@@ -26,39 +56,27 @@ export default function Editor({ currentNote, updateNote }) {
 
   const handleInsertButton = () => {
     setContentBlocks([...contentBlocks, '']); // Add an empty content block
-    document.querySelector(".editortxt").style.borderBottom = "1px solid #ccc"
-    document.querySelector(".editortxt").style.paddingBottom = "30px"
+    document.querySelector(".editortxt").style.borderBottom="2px solid #ccc"
+    document.querySelector(".editortxt").style.paddingBottom="40px"
   };
-
-  //   const PopupMenu = () => {
-//     return (
-//       <div
-//         className="popup"
-//         style={{ position: 'absolute', left: popupPosition.left, top: popupPosition.top }}
-//       >
-//         <button onClick={() => toggleFormat('bold')}>Bold</button>
-//         <button onClick={() => toggleFormat('italic')}>Italic</button>
-//         <button onClick={() => toggleFormat('underline')}>Underline</button>
-//         <button onClick={() => toggleFormat('link')}>Link</button>
-//       </div>
-//     );
-//   };
-//   const handleChange = (content) => {
-//     updateNote(content);
-//   };
- 
 
   return (
     <div className="editor">
+      <div id="toolbar" style={{ position: 'absolute', ...toolbarPosition }}>
+        <button className="ql-bold">Bold</button>
+        <button className="ql-italic">Italic</button>
+        <button className="ql-underline">Underline</button>
+        <button className="ql-link">Link</button>
+      </div>
       {contentBlocks.map((content, index) => (
         <ReactQuill
           key={index}
           theme="snow"
           value={content}
           onChange={(content) => handleChange(content, index)}
-          className="editortxt"
+          className={`editortxt ${index > 0 ? 'new-content' : ''}`}
           modules={modules}
-          ref={quillRef}
+          ref={(el) => quillRefs.current[index] = el}
         />
       ))}
       <div className="button-container">
@@ -67,6 +85,7 @@ export default function Editor({ currentNote, updateNote }) {
     </div>
   );
 }
+
 
 
 

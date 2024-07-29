@@ -117,6 +117,11 @@ export default function TreeView({ currentNote, setCurrentNoteId, newNote ,notes
 // console.log(notes)
   return (
     <div className="tree-view-container">
+      <div className="root-folder">
+      <button className="root-btn" onClick={() => setData([...data, { label: `collection${data.length + 1}`, to: "location", children: [], notes: [] }])}>
+        +
+      </button>
+      </div>
       <MenuList 
         list={data} 
         addFolder={addFolder} 
@@ -126,9 +131,6 @@ export default function TreeView({ currentNote, setCurrentNoteId, newNote ,notes
         currentNote={currentNote}
         notes={notes} 
       />
-      <button onClick={() => setData([...data, { label: `collection${data.length + 1}`, to: "location", children: [], notes: [] }])}>
-        Add Root Folder
-      </button>
     </div>
   );
 }

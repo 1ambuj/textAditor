@@ -1,5 +1,9 @@
 import React, { useRef, useState } from 'react';
-import Profile from "../assets/avatar-icon.png";
+import bell from "../assets/bell-regular.svg"
+import Menu from "../assets/bars-solid.svg"
+import Search from "../assets/magnifying-glass-solid.svg"
+import team from "../assets/user-plus-solid.svg"
+
 import "../App.css";
 
 
@@ -40,18 +44,34 @@ function useOnClickOutside(ref, handler) {
     <div className='header'>
       <nav className='flex  '>
         <div className="flex2">
-          
+             <img src={Menu} alt="" className="menu-bar" width="20px"/>
+             <div className='span-div'>
+              <img src={Search} alt="" className="search-bar" width="20px"/>
+              <span className='search-span'>dfin</span>
+             </div>
+            
         </div>
-        <div className="profile relative">
-          <img src={Profile} alt="" onClick={toggle} className='img' />
-          {isOpen && (
-            <div className='dropdown' ref={dropdownRef}>
-              <ul>{itemRender}</ul>
-            </div>
-          )}
+       
+        <div className='team-flex'>
+          <div className='team-member-flex'>
+          <span><img src={team} alt="team" width="20px" /></span>
+          <h3 >INVITE TEAM MEMBER </h3>
+          
+          </div>
+          <img src={bell} alt="" width="20px"/>
+          <div className="profile relative">
+            <div onClick={toggle} className='ambuj img'>AM</div>
+            {isOpen && (
+              <div className='dropdown' ref={dropdownRef}>
+                <ul>{itemRender}</ul>
+              </div>
+            )}
+            <div className='new'>new</div>
+          
+          </div>
         </div>
       </nav>
-      <div className='flex2'>
+      <div className='list-item'>
       <li className='list-none red-all'><a href="">All</a></li>
           <li className=''><a href="">Board</a></li>
           <li className=''><a href="">Graph</a></li>

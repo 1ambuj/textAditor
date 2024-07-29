@@ -50,9 +50,7 @@
 
 
 import MenuList from "./treeList";
-import Folder from "../../assets/folder-solid.svg";
-import NoteIcon from "../../assets/file-solid.svg";
-
+import { RiFileAddFill } from "react-icons/ri";
 
 
 export default function MenuItem({
@@ -84,11 +82,13 @@ export default function MenuItem({
         <p>{item.label}</p>
         <div className="file-folder">
           <span>
-            <img src={Folder} alt="folder" onClick={handleFolder} className="red" />
+            {/* <img src={Folder} alt="folder" onClick={handleFolder} className="red" /> */}
+            <button onClick={handleFolder} className="red">+</button>
           </span>
           <div>
             <span>
-              <img  src={NoteIcon}  alt="note" onClick={handleNote} className=" new-note" />
+              {/* <img  src={NoteIcon}  alt="note" onClick={handleNote} className="new-note" /> */}
+              <RiFileAddFill onClick={handleNote} className="new-note file" />
             </span>
           </div>
         </div>
